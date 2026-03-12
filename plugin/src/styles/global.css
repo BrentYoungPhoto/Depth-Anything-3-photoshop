@@ -1,0 +1,501 @@
+/* ============================================================
+   Depth Mask Tool — Global Styles
+   Dark theme inspired by Adobe creative tools
+   ============================================================ */
+
+:root {
+  --bg-primary: #1e1e1e;
+  --bg-secondary: #2d2d2d;
+  --bg-tertiary: #3a3a3a;
+  --bg-hover: #454545;
+  --text-primary: #e0e0e0;
+  --text-secondary: #999;
+  --text-muted: #666;
+  --accent: #0d99ff;
+  --accent-hover: #0b86e0;
+  --accent-dim: rgba(13, 153, 255, 0.2);
+  --border: #444;
+  --error: #ff4d4d;
+  --success: #4caf50;
+  --radius: 6px;
+  --sidebar-width: 280px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================================
+   Layout
+   ============================================================ */
+
+.app {
+  display: flex;
+  height: 100vh;
+}
+
+.app__sidebar {
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.app__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.app__slider-area {
+  padding: 16px 24px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border);
+}
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn--primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.btn--primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.btn--secondary {
+  background: transparent;
+  border-color: var(--border);
+}
+
+.btn--full {
+  width: 100%;
+}
+
+.btn--sm {
+  padding: 3px 10px;
+  font-size: 11px;
+}
+
+.btn--active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+/* ============================================================
+   Control Panel
+   ============================================================ */
+
+.control-panel {
+  padding: 16px;
+}
+
+.control-panel__title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--text-primary);
+}
+
+.control-panel__section {
+  margin-bottom: 20px;
+}
+
+.control-panel__section h3 {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.control-panel__row {
+  display: flex;
+  gap: 8px;
+}
+
+.control-panel__row select {
+  flex: 1;
+}
+
+.control-panel__field {
+  margin-bottom: 10px;
+}
+
+.control-panel__field label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.control-panel__field input[type="range"] {
+  width: 100%;
+}
+
+.control-panel__field input[type="checkbox"] {
+  margin-right: 6px;
+}
+
+.control-panel__info {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.control-panel__status {
+  font-size: 11px;
+  padding: 8px;
+  border-radius: var(--radius);
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.control-panel__status--error {
+  background: rgba(255, 77, 77, 0.1);
+  color: var(--error);
+}
+
+.control-panel__footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+select {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 12px;
+}
+
+/* ============================================================
+   Image Viewer
+   ============================================================ */
+
+.image-viewer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.image-viewer--empty {
+  align-items: center;
+  justify-content: center;
+}
+
+.image-viewer__placeholder {
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.image-viewer__icon {
+  margin-bottom: 16px;
+  opacity: 0.3;
+}
+
+.image-viewer__placeholder p {
+  font-size: 14px;
+}
+
+.image-viewer__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 16px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+}
+
+.image-viewer__view-modes {
+  display: flex;
+  gap: 4px;
+}
+
+.image-viewer__opacity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.image-viewer__opacity input[type="range"] {
+  width: 100px;
+}
+
+.image-viewer__depth-value {
+  font-size: 11px;
+  color: var(--accent);
+  font-family: monospace;
+}
+
+.image-viewer__canvas-container {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #111;
+}
+
+.image-viewer__canvas {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.image-viewer__overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 100%;
+  max-height: 100%;
+  pointer-events: none;
+}
+
+/* ============================================================
+   Depth Range Slider
+   ============================================================ */
+
+.depth-slider {
+  user-select: none;
+}
+
+.depth-slider__labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.depth-slider__range-text {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.depth-slider__track {
+  position: relative;
+  height: 40px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.depth-slider__histogram {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius);
+  pointer-events: none;
+}
+
+.depth-slider__range {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: var(--accent-dim);
+  border-left: 2px solid var(--accent);
+  border-right: 2px solid var(--accent);
+  pointer-events: none;
+}
+
+.depth-slider__handle {
+  position: absolute;
+  top: -4px;
+  width: 16px;
+  height: 48px;
+  margin-left: -8px;
+  cursor: ew-resize;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.depth-slider__handle-grip {
+  width: 6px;
+  height: 24px;
+  background: var(--accent);
+  border-radius: 3px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  transition: transform 0.1s;
+}
+
+.depth-slider__handle:hover .depth-slider__handle-grip {
+  transform: scaleX(1.3);
+}
+
+/* ============================================================
+   Mask Preview
+   ============================================================ */
+
+.mask-preview {
+  padding: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.mask-preview--empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  padding: 24px 16px;
+}
+
+.mask-preview__title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.mask-preview__canvas {
+  width: 100%;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+/* ============================================================
+   Status Bar
+   ============================================================ */
+
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.status-bar__sep {
+  color: var(--border);
+}
+
+/* ============================================================
+   Status Dot
+   ============================================================ */
+
+.status-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+
+.status-dot--green {
+  background: var(--success);
+  box-shadow: 0 0 4px var(--success);
+}
+
+.status-dot--red {
+  background: var(--error);
+}
+
+/* ============================================================
+   Scrollbar
+   ============================================================ */
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-hover);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* ============================================================
+   Range input styling
+   ============================================================ */
+
+input[type="range"] {
+  -webkit-appearance: none;
+  height: 4px;
+  background: var(--bg-tertiary);
+  border-radius: 2px;
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}

@@ -33,6 +33,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel
 
+from fastapi.middleware.cors import CORSMiddleware
+
 from ..api import DepthAnything3
 from ..utils.memory import (
     get_gpu_memory_info,
@@ -566,6 +568,19 @@ def create_app(model_dir: str, device: str = "cuda", gallery_dir: Optional[str] 
         description="Model inference service for Depth Anything 3",
         version="1.0.0",
     )
+
+    # CORS for Electron app renderer
+    _app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    # Mount mask plugin API
+    from .mask_api import router as mask_router
+
+    _app.include_router(mask_router)
 
     # Store gallery directory globally for use in routes
     _gallery_dir = gallery_dir
