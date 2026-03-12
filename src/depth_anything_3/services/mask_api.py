@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 from fastapi import APIRouter, File, HTTPException, UploadFile
-from fastapi.responses import Response, StreamingResponse
+from fastapi.responses import Response
 from PIL import Image
 from pydantic import BaseModel
 
@@ -428,3 +428,38 @@ async def delete_session(session_id: str):
         del _sessions[session_id]
         return {"success": True, "message": f"Session '{session_id}' deleted"}
     raise HTTPException(status_code=404, detail=f"Session '{session_id}' not found")
+
+
+def create_plugin_app(device: str = "cuda") -> "FastAPI":
+    """Create a standalone FastAPI app for the Photoshop mask plugin.
+
+    This is a lightweight app that only serves the mask plugin API.
+    Unlike the full backend's create_app(), it does not require a
+    pre-loaded model directory — models are loaded on demand via
+    the /api/v1/models/load endpoint.
+
+    Used by the Electron app's python-manager to spawn the backend:
+        uvicorn depth_anything_3.services.mask_api:create_plugin_app --factory
+    """
+    from fastapi import FastAPI
+    from fastapi.middleware.cors import CORSMiddleware
+
+    global _device
+    _device = device
+
+    app = FastAPI(
+        title="Depth Mask Plugin API",
+        description="Depth-based mask generation for the Photoshop plugin",
+        version="1.0.0",
+    )
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    app.include_router(router)
+
+    return app

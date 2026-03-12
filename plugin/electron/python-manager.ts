@@ -21,13 +21,14 @@ export class PythonManager {
     }
 
     return new Promise((resolve) => {
-      // Spawn the Python backend using the project's existing FastAPI server
+      // Spawn the plugin-specific FastAPI app (no model_dir required).
+      // Models are loaded on-demand via /api/v1/models/load.
       this.process = spawn(
         'python',
         [
           '-m',
           'uvicorn',
-          'depth_anything_3.services.backend:create_app',
+          'depth_anything_3.services.mask_api:create_plugin_app',
           '--factory',
           '--host',
           '127.0.0.1',
@@ -35,7 +36,7 @@ export class PythonManager {
           String(BACKEND_PORT),
         ],
         {
-          cwd: path.join(PROJECT_ROOT, 'src'),
+          cwd: PROJECT_ROOT,
           env: {
             ...process.env,
             PYTHONPATH: path.join(PROJECT_ROOT, 'src'),
