@@ -26,6 +26,13 @@ input_images*/
 # Jupyter notebooks
 .ipynb_checkpoints
 
+# Plugin build artifacts
+plugin/dist-electron/
+plugin/node_modules/
+
+# Virtual environments
+.venv/
+
 # OS files
 .DS_Store
 

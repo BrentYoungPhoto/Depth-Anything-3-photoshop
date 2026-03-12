@@ -16,9 +16,14 @@
 Services module for Depth Anything 3.
 """
 
-from depth_anything_3.services.backend import create_app, start_server
-
 __all__ = [
-    start_server,
-    create_app,
+    "start_server",
+    "create_app",
 ]
+
+
+def __getattr__(name):
+    if name in ("create_app", "start_server"):
+        from depth_anything_3.services.backend import create_app, start_server
+        return create_app if name == "create_app" else start_server
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

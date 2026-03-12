@@ -24,6 +24,7 @@ dependencies = [
     "xformers",
     "open3d",
     "fastapi",
+    "python-multipart",
     "uvicorn",
     "requests",
     "typer",
