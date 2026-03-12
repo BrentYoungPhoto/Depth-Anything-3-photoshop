@@ -45,10 +45,14 @@ export interface InferenceResult {
 export interface DepthMapState {
   sessionId: string | null;
   depthData: Float32Array | null;
+  confidenceData: Float32Array | null;
+  skyMask: Uint8Array | null;
   width: number;
   height: number;
   depthVisualization: string | null; // data URL of colorized depth
   originalImage: string | null; // data URL
+  hasConfidence: boolean;
+  hasSky: boolean;
 }
 
 export interface MaskSettings {
@@ -57,4 +61,6 @@ export interface MaskSettings {
   feather: number;
   invert: boolean;
   useConfidence: boolean;
+  confidenceThreshold: number;
+  excludeSky: boolean;
 }

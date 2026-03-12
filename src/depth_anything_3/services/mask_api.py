@@ -295,6 +295,37 @@ async def get_depth_raw(session_id: str):
     )
 
 
+@router.get("/depth/{session_id}/confidence")
+async def get_confidence_raw(session_id: str):
+    """Return the confidence map as raw Float32Array binary."""
+    session = _get_session(session_id)
+    conf = session.get("conf")
+    if conf is None:
+        raise HTTPException(status_code=404, detail="No confidence data for this session")
+
+    # Normalize confidence to 0-1
+    conf_norm = np.clip(conf.astype(np.float32), 0, 1)
+    return Response(
+        content=conf_norm.tobytes(),
+        media_type="application/octet-stream",
+    )
+
+
+@router.get("/depth/{session_id}/sky")
+async def get_sky_mask(session_id: str):
+    """Return the sky mask as raw Uint8Array binary (nonzero = sky)."""
+    session = _get_session(session_id)
+    sky = session.get("sky")
+    if sky is None:
+        raise HTTPException(status_code=404, detail="No sky mask for this session")
+
+    sky_u8 = (sky > 0).astype(np.uint8)
+    return Response(
+        content=sky_u8.tobytes(),
+        media_type="application/octet-stream",
+    )
+
+
 @router.get("/depth/{session_id}/visualization")
 async def get_depth_visualization(session_id: str):
     """Return a colorized depth map PNG for overlay display."""

@@ -14,6 +14,8 @@ interface ControlPanelProps {
   loading: boolean;
   inferenceTime: number | null;
   error: string | null;
+  hasConfidence: boolean;
+  hasSky: boolean;
 }
 
 export const ControlPanel: React.FC<ControlPanelProps> = ({
@@ -26,6 +28,8 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   loading,
   inferenceTime,
   error,
+  hasConfidence,
+  hasSky,
 }) => {
   const [models, setModels] = useState<api.ModelInfo[]>([]);
   const [selectedModel, setSelectedModel] = useState('da3-small');
@@ -186,6 +190,60 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             Invert Mask
           </label>
         </div>
+
+        {/* Confidence threshold — only shown when confidence data is available */}
+        {hasConfidence && (
+          <>
+            <div className="control-panel__field">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={maskSettings.useConfidence}
+                  onChange={(e) =>
+                    onSettingsChange({ ...maskSettings, useConfidence: e.target.checked })
+                  }
+                />
+                Use Confidence Filter
+              </label>
+            </div>
+            {maskSettings.useConfidence && (
+              <div className="control-panel__field">
+                <label>
+                  Confidence Threshold: {maskSettings.confidenceThreshold.toFixed(2)}
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={maskSettings.confidenceThreshold}
+                  onChange={(e) =>
+                    onSettingsChange({
+                      ...maskSettings,
+                      confidenceThreshold: parseFloat(e.target.value),
+                    })
+                  }
+                />
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Sky exclusion — only shown when sky mask data is available */}
+        {hasSky && (
+          <div className="control-panel__field">
+            <label>
+              <input
+                type="checkbox"
+                checked={maskSettings.excludeSky}
+                onChange={(e) =>
+                  onSettingsChange({ ...maskSettings, excludeSky: e.target.checked })
+                }
+              />
+              Exclude Sky
+            </label>
+          </div>
+        )}
       </section>
 
       {/* Actions */}

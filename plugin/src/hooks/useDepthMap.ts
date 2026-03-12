@@ -5,6 +5,8 @@ import * as api from '../lib/api-client';
 export interface DepthMapState {
   sessionId: string | null;
   depthData: Float32Array | null;
+  confidenceData: Float32Array | null;
+  skyMask: Uint8Array | null;
   width: number;
   height: number;
   depthVisualization: string | null;
@@ -12,6 +14,8 @@ export interface DepthMapState {
   loading: boolean;
   error: string | null;
   inferenceTime: number | null;
+  hasConfidence: boolean;
+  hasSky: boolean;
 }
 
 export interface MaskSettings {
@@ -19,11 +23,16 @@ export interface MaskSettings {
   maxDepth: number;
   feather: number;
   invert: boolean;
+  useConfidence: boolean;
+  confidenceThreshold: number;
+  excludeSky: boolean;
 }
 
 const initialState: DepthMapState = {
   sessionId: null,
   depthData: null,
+  confidenceData: null,
+  skyMask: null,
   width: 0,
   height: 0,
   depthVisualization: null,
@@ -31,6 +40,8 @@ const initialState: DepthMapState = {
   loading: false,
   error: null,
   inferenceTime: null,
+  hasConfidence: false,
+  hasSky: false,
 };
 
 export function useDepthMap() {
@@ -40,6 +51,9 @@ export function useDepthMap() {
     maxDepth: 0.7,
     feather: 0.02,
     invert: false,
+    useConfidence: false,
+    confidenceThreshold: 0.5,
+    excludeSky: false,
   });
   const maskCacheRef = useRef<Uint8Array | null>(null);
 
@@ -54,15 +68,32 @@ export function useDepthMap() {
       const result = await api.runInference(file);
 
       // 2. Fetch raw depth data + visualization + original image in parallel
-      const [depthResult, depthVis, origImage] = await Promise.all([
+      const fetchPromises: [
+        Promise<{ data: Float32Array; width: number; height: number }>,
+        Promise<string>,
+        Promise<string>,
+        Promise<Float32Array | null>,
+        Promise<Uint8Array | null>,
+      ] = [
         api.fetchDepthRaw(result.session_id),
         api.fetchDepthVisualization(result.session_id),
         api.fetchOriginalImage(result.session_id),
-      ]);
+        result.has_confidence
+          ? api.fetchConfidenceRaw(result.session_id)
+          : Promise.resolve(null),
+        result.has_sky
+          ? api.fetchSkyMask(result.session_id)
+          : Promise.resolve(null),
+      ];
+
+      const [depthResult, depthVis, origImage, confData, skyData] =
+        await Promise.all(fetchPromises);
 
       setState({
         sessionId: result.session_id,
         depthData: depthResult.data,
+        confidenceData: confData,
+        skyMask: skyData,
         width: depthResult.width,
         height: depthResult.height,
         depthVisualization: depthVis,
@@ -70,6 +101,8 @@ export function useDepthMap() {
         loading: false,
         error: null,
         inferenceTime: result.inference_time,
+        hasConfidence: result.has_confidence,
+        hasSky: result.has_sky,
       });
 
       // Reset mask cache
@@ -96,9 +129,12 @@ export function useDepthMap() {
       maskSettings.minDepth,
       maskSettings.maxDepth,
       maskSettings.feather,
-      maskSettings.invert
+      maskSettings.invert,
+      maskSettings.useConfidence ? state.confidenceData : null,
+      maskSettings.confidenceThreshold,
+      maskSettings.excludeSky ? state.skyMask : null,
     );
-  }, [state.depthData, state.width, state.height, maskSettings]);
+  }, [state.depthData, state.confidenceData, state.skyMask, state.width, state.height, maskSettings]);
 
   /**
    * Compute depth histogram for slider track visualization.

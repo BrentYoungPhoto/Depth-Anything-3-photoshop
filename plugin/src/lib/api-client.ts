@@ -87,16 +87,6 @@ export async function runInference(imageFile: File): Promise<InferenceResult> {
 }
 
 /**
- * Run inference on an image from a file path (reads it first).
- */
-export async function runInferenceFromPath(imagePath: string): Promise<InferenceResult> {
-  const res = await fetch(imagePath);
-  const blob = await res.blob();
-  const file = new File([blob], 'image.jpg', { type: blob.type });
-  return runInference(file);
-}
-
-/**
  * Fetch the raw depth map as a Float32Array.
  * This is the key data for client-side real-time mask computation.
  */
@@ -115,6 +105,30 @@ export async function fetchDepthRaw(
     width,
     height,
   };
+}
+
+/**
+ * Fetch the raw confidence map as a Float32Array.
+ */
+export async function fetchConfidenceRaw(
+  sessionId: string
+): Promise<Float32Array> {
+  const res = await fetch(`${getBaseURL()}/depth/${sessionId}/confidence`);
+  if (!res.ok) throw new Error(`Failed to fetch confidence data: ${res.statusText}`);
+  const buffer = await res.arrayBuffer();
+  return new Float32Array(buffer);
+}
+
+/**
+ * Fetch the sky mask as a Uint8Array.
+ */
+export async function fetchSkyMask(
+  sessionId: string
+): Promise<Uint8Array> {
+  const res = await fetch(`${getBaseURL()}/depth/${sessionId}/sky`);
+  if (!res.ok) throw new Error(`Failed to fetch sky mask: ${res.statusText}`);
+  const buffer = await res.arrayBuffer();
+  return new Uint8Array(buffer);
 }
 
 /**

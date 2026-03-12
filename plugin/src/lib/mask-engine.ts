@@ -17,6 +17,9 @@
  * @param maxDepth - Max depth threshold (0-1)
  * @param feather - Sigmoid falloff width (0 = hard cutoff)
  * @param invert - Whether to invert the mask
+ * @param confidenceData - Optional confidence map (Float32Array, 0-1)
+ * @param confidenceThreshold - Pixels below this confidence are excluded
+ * @param skyMask - Optional sky mask (Uint8Array, nonzero = sky)
  * @returns Uint8Array mask (0-255), length = width * height
  */
 export function computeMask(
@@ -26,7 +29,10 @@ export function computeMask(
   minDepth: number,
   maxDepth: number,
   feather: number,
-  invert: boolean = false
+  invert: boolean = false,
+  confidenceData: Float32Array | null = null,
+  confidenceThreshold: number = 0.5,
+  skyMask: Uint8Array | null = null,
 ): Uint8Array {
   const len = width * height;
   const mask = new Uint8Array(len);
@@ -38,15 +44,37 @@ export function computeMask(
       const low = 1 / (1 + Math.exp(-(d - minDepth) / f));
       const high = 1 / (1 + Math.exp((d - maxDepth) / f));
       let val = low * high;
+
+      // Confidence filter
+      if (confidenceData && confidenceData[i] < confidenceThreshold) {
+        val = 0;
+      }
+
+      // Sky exclusion
+      if (skyMask && skyMask[i]) {
+        val = 0;
+      }
+
       if (invert) val = 1 - val;
       mask[i] = Math.round(val * 255);
     }
   } else {
     for (let i = 0; i < len; i++) {
       const d = depthData[i];
-      let val = d >= minDepth && d <= maxDepth ? 255 : 0;
-      if (invert) val = 255 - val;
-      mask[i] = val;
+      let val = d >= minDepth && d <= maxDepth ? 1 : 0;
+
+      // Confidence filter
+      if (confidenceData && confidenceData[i] < confidenceThreshold) {
+        val = 0;
+      }
+
+      // Sky exclusion
+      if (skyMask && skyMask[i]) {
+        val = 0;
+      }
+
+      if (invert) val = 1 - val;
+      mask[i] = val * 255;
     }
   }
 

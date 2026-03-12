@@ -53,6 +53,8 @@ const App: React.FC = () => {
           loading={state.loading}
           inferenceTime={state.inferenceTime}
           error={state.error}
+          hasConfidence={state.hasConfidence}
+          hasSky={state.hasSky}
         />
         <MaskPreview mask={currentMask} width={state.width} height={state.height} />
       </aside>
