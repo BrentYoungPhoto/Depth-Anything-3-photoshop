@@ -38,11 +38,28 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   const [statusMsg, setStatusMsg] = useState('');
   const { isConnected: psConnected, sending: psSending, sendMask } = usePhotoshop();
 
-  // Fetch models on mount
+  // Fetch models on mount and auto-load the first one
   useEffect(() => {
     api
       .listModels()
-      .then(setModels)
+      .then((modelList) => {
+        setModels(modelList);
+        // Auto-load the first available model
+        if (modelList.length > 0) {
+          const first = modelList[0].name;
+          setSelectedModel(first);
+          setModelLoading(true);
+          setStatusMsg(`Loading ${first}...`);
+          api.loadModel(first).then((result) => {
+            setModelLoaded(true);
+            setStatusMsg(result.message);
+            setModelLoading(false);
+          }).catch((err) => {
+            setStatusMsg(err instanceof Error ? err.message : 'Failed to load model');
+            setModelLoading(false);
+          });
+        }
+      })
       .catch(() => setStatusMsg('Backend not ready — start it first'));
   }, []);
 
@@ -121,26 +138,25 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
       {/* Model Selection */}
       <section className="control-panel__section">
         <h3>Model</h3>
-        <div className="control-panel__row">
-          <select
-            value={selectedModel}
-            onChange={(e) => setSelectedModel(e.target.value)}
-            disabled={modelLoading}
-          >
-            {models.map((m) => (
-              <option key={m.name} value={m.name}>
-                {m.name} ({m.params}, ~{m.vram_gb}GB VRAM)
-              </option>
-            ))}
-          </select>
-          <button
-            className="btn btn--primary"
-            onClick={handleLoadModel}
-            disabled={modelLoading || modelLoaded}
-          >
-            {modelLoading ? 'Loading...' : modelLoaded ? 'Loaded' : 'Load Model'}
-          </button>
-        </div>
+        <select
+          value={selectedModel}
+          onChange={(e) => setSelectedModel(e.target.value)}
+          disabled={modelLoading || modelLoaded}
+          style={{ width: '100%', marginBottom: '8px' }}
+        >
+          {models.map((m) => (
+            <option key={m.name} value={m.name}>
+              {m.name} ({m.params}, ~{m.vram_gb}GB VRAM)
+            </option>
+          ))}
+        </select>
+        <button
+          className="btn btn--primary btn--full"
+          onClick={handleLoadModel}
+          disabled={modelLoading || modelLoaded}
+        >
+          {modelLoading ? 'Loading...' : modelLoaded ? 'Model Loaded' : 'Load Model'}
+        </button>
       </section>
 
       {/* Image */}
