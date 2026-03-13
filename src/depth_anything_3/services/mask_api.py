@@ -11,6 +11,7 @@ import uuid
 from typing import Any, Dict, List, Optional
 
 import numpy as np
+import torch
 from fastapi import APIRouter, File, HTTPException, UploadFile
 from fastapi.responses import Response
 from PIL import Image
@@ -26,7 +27,7 @@ router = APIRouter(prefix="/api/v1", tags=["mask-plugin"])
 
 _model: Optional[DepthAnything3] = None
 _model_name: Optional[str] = None
-_device: str = "cuda"
+_device: str = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Session store: session_id -> { depth, conf, sky, width, height, image }
 _sessions: Dict[str, Dict[str, Any]] = {}
@@ -430,7 +431,7 @@ async def delete_session(session_id: str):
     raise HTTPException(status_code=404, detail=f"Session '{session_id}' not found")
 
 
-def create_plugin_app(device: str = "cuda") -> "FastAPI":
+def create_plugin_app(device: str = "") -> "FastAPI":
     """Create a standalone FastAPI app for the Photoshop mask plugin.
 
     This is a lightweight app that only serves the mask plugin API.
@@ -445,7 +446,7 @@ def create_plugin_app(device: str = "cuda") -> "FastAPI":
     from fastapi.middleware.cors import CORSMiddleware
 
     global _device
-    _device = device
+    _device = device if device else ("cuda" if torch.cuda.is_available() else "cpu")
 
     app = FastAPI(
         title="Depth Mask Plugin API",
