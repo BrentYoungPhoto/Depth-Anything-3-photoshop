@@ -459,6 +459,7 @@ def create_plugin_app(device: str = "") -> "FastAPI":
         allow_origins=["*"],
         allow_methods=["*"],
         allow_headers=["*"],
+        expose_headers=["X-Depth-Width", "X-Depth-Height"],
     )
 
     app.include_router(router)
