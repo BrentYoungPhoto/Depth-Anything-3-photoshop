@@ -23,6 +23,9 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
   const [depthOpacity, setDepthOpacity] = useState(0.5);
   const [cursorDepth, setCursorDepth] = useState<number | null>(null);
 
+  // Track the actual rendered size of the base canvas for overlay alignment
+  const [canvasSize, setCanvasSize] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
+
   // Draw the base image (original or depth)
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -40,38 +43,67 @@ export const ImageViewer: React.FC<ImageViewerProps> = ({
     img.onload = () => {
       canvas.width = img.width;
       canvas.height = img.height;
+      setCanvasSize({ w: img.width, h: img.height });
       ctx.drawImage(img, 0, 0);
     };
     img.src = src;
   }, [originalImage, depthVisualization, viewMode]);
 
-  // Draw the mask overlay
+  // Draw the mask overlay — sized to match the base canvas
   useEffect(() => {
     const canvas = overlayCanvasRef.current;
     if (!canvas || !mask || width === 0) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    canvas.width = width;
-    canvas.height = height;
+    // Use the same pixel dimensions as the base canvas so the overlay aligns
+    const drawW = canvasSize.w || width;
+    const drawH = canvasSize.h || height;
+    canvas.width = drawW;
+    canvas.height = drawH;
 
-    if (viewMode === 'mask') {
-      // Show mask as grayscale
-      const imageData = ctx.createImageData(width, height);
-      for (let i = 0; i < mask.length; i++) {
-        const v = mask[i];
-        const idx = i * 4;
-        imageData.data[idx] = v;
-        imageData.data[idx + 1] = v;
-        imageData.data[idx + 2] = v;
-        imageData.data[idx + 3] = 255;
+    // If mask dimensions match canvas, draw directly; otherwise use a temp
+    // canvas at mask resolution and scale up
+    if (width === drawW && height === drawH) {
+      if (viewMode === 'mask') {
+        const imageData = ctx.createImageData(width, height);
+        for (let i = 0; i < mask.length; i++) {
+          const v = mask[i];
+          const idx = i * 4;
+          imageData.data[idx] = v;
+          imageData.data[idx + 1] = v;
+          imageData.data[idx + 2] = v;
+          imageData.data[idx + 3] = 255;
+        }
+        ctx.putImageData(imageData, 0, 0);
+      } else {
+        renderMaskOverlay(ctx, mask, width, height, [0, 120, 255], depthOpacity);
       }
-      ctx.putImageData(imageData, 0, 0);
     } else {
-      // Show colored overlay
-      renderMaskOverlay(ctx, mask, width, height, [0, 120, 255], depthOpacity);
+      // Render at mask resolution, then scale to canvas size
+      const tmpCanvas = document.createElement('canvas');
+      tmpCanvas.width = width;
+      tmpCanvas.height = height;
+      const tmpCtx = tmpCanvas.getContext('2d')!;
+
+      if (viewMode === 'mask') {
+        const imageData = tmpCtx.createImageData(width, height);
+        for (let i = 0; i < mask.length; i++) {
+          const v = mask[i];
+          const idx = i * 4;
+          imageData.data[idx] = v;
+          imageData.data[idx + 1] = v;
+          imageData.data[idx + 2] = v;
+          imageData.data[idx + 3] = 255;
+        }
+        tmpCtx.putImageData(imageData, 0, 0);
+      } else {
+        renderMaskOverlay(tmpCtx, mask, width, height, [0, 120, 255], depthOpacity);
+      }
+
+      ctx.drawImage(tmpCanvas, 0, 0, drawW, drawH);
     }
-  }, [mask, width, height, viewMode, depthOpacity]);
+  }, [mask, width, height, viewMode, depthOpacity, canvasSize]);
 
   const handleMouseMove = (e: React.MouseEvent) => {
     // This would show depth value at cursor - placeholder for now

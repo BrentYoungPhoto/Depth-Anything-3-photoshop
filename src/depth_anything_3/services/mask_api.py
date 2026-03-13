@@ -244,6 +244,19 @@ async def run_inference(file: UploadFile = File(...)):
         conf = prediction.conf[0] if prediction.conf is not None else None
         sky = prediction.sky[0] if prediction.sky is not None else None
 
+        # Resize depth/conf/sky to match original image dimensions
+        orig_h, orig_w = image_np.shape[:2]
+        if depth.shape != (orig_h, orig_w):
+            from scipy.ndimage import zoom
+
+            scale_h = orig_h / depth.shape[0]
+            scale_w = orig_w / depth.shape[1]
+            depth = zoom(depth, (scale_h, scale_w), order=1).astype(np.float32)
+            if conf is not None:
+                conf = zoom(conf, (scale_h, scale_w), order=1).astype(np.float32)
+            if sky is not None:
+                sky = zoom(sky.astype(np.float32), (scale_h, scale_w), order=0).astype(np.uint8)
+
         # Create session
         session_id = str(uuid.uuid4())[:8]
         depth_norm = _normalize_depth(depth)
@@ -253,15 +266,15 @@ async def run_inference(file: UploadFile = File(...)):
             "depth_norm": depth_norm,
             "conf": conf,
             "sky": sky,
-            "width": depth.shape[1],
-            "height": depth.shape[0],
+            "width": orig_w,
+            "height": orig_h,
             "image": image_np,
         }
 
         return InferenceResponse(
             session_id=session_id,
-            width=depth.shape[1],
-            height=depth.shape[0],
+            width=orig_w,
+            height=orig_h,
             depth_min=float(depth.min()),
             depth_max=float(depth.max()),
             depth_mean=float(depth.mean()),
