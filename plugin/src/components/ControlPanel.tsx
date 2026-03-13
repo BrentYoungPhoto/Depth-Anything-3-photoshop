@@ -140,8 +140,14 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
         <h3>Model</h3>
         <select
           value={selectedModel}
-          onChange={(e) => setSelectedModel(e.target.value)}
-          disabled={modelLoading || modelLoaded}
+          onChange={(e) => {
+            setSelectedModel(e.target.value);
+            // Allow loading a different model
+            if (e.target.value !== selectedModel) {
+              setModelLoaded(false);
+            }
+          }}
+          disabled={modelLoading}
           style={{ width: '100%', marginBottom: '8px' }}
         >
           {models.map((m) => (

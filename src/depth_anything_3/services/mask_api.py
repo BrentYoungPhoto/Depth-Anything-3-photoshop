@@ -244,18 +244,26 @@ async def run_inference(file: UploadFile = File(...)):
         conf = prediction.conf[0] if prediction.conf is not None else None
         sky = prediction.sky[0] if prediction.sky is not None else None
 
-        # Resize depth/conf/sky to match original image dimensions
+        # Resize depth/conf/sky to match original image dimensions using
+        # PIL for high-quality interpolation (avoids blocky artifacts)
         orig_h, orig_w = image_np.shape[:2]
         if depth.shape != (orig_h, orig_w):
-            from scipy.ndimage import zoom
-
-            scale_h = orig_h / depth.shape[0]
-            scale_w = orig_w / depth.shape[1]
-            depth = zoom(depth, (scale_h, scale_w), order=1).astype(np.float32)
+            depth = np.array(
+                Image.fromarray(depth).resize((orig_w, orig_h), Image.BILINEAR),
+                dtype=np.float32,
+            )
             if conf is not None:
-                conf = zoom(conf, (scale_h, scale_w), order=1).astype(np.float32)
+                conf = np.array(
+                    Image.fromarray(conf).resize((orig_w, orig_h), Image.BILINEAR),
+                    dtype=np.float32,
+                )
             if sky is not None:
-                sky = zoom(sky.astype(np.float32), (scale_h, scale_w), order=0).astype(np.uint8)
+                sky = np.array(
+                    Image.fromarray(sky.astype(np.uint8)).resize(
+                        (orig_w, orig_h), Image.NEAREST
+                    ),
+                    dtype=np.uint8,
+                )
 
         # Create session
         session_id = str(uuid.uuid4())[:8]
